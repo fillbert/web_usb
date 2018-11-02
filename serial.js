@@ -11,7 +11,7 @@ var serial = {};
 
   serial.requestPort = function() {
     const filters = [
-      { 'vendorId': 0x2341, 'productId': 0x8036 },
+      { 'vendorId': 0x04FF, 'productId': 0xFFFF },
       { 'vendorId': 0x2341, 'productId': 0x8037 },
       { 'vendorId': 0x2341, 'productId': 0x804d },
       { 'vendorId': 0x2341, 'productId': 0x804e },
@@ -29,11 +29,11 @@ var serial = {};
 
   serial.Port.prototype.connect = function() {
     let readLoop = () => {
-      this.device_.transferIn(5, 64).then(result => {
-        this.onReceive(result.data);
+      this.device_.transferIn(2, 64).then(result => {
+        console.log('TReceived' + result.data);
         readLoop();
       }, error => {
-        this.onReceiveError(error);
+        console.log('Connect:' + error);
       });
     };
 
@@ -43,14 +43,14 @@ var serial = {};
             return this.device_.selectConfiguration(1);
           }
         })
-        .then(() => this.device_.claimInterface(2))
-        .then(() => this.device_.selectAlternateInterface(2, 0))
-        .then(() => this.device_.controlTransferOut({
-            'requestType': 'class',
-            'recipient': 'interface',
-            'request': 0x22,
-            'value': 0x01,
-            'index': 0x02}))
+        .then(() => this.device_.claimInterface(1))
+        //.then(() => this.device_.selectAlternateInterface(1, 2))
+        //.then(() => this.device_.controlTransferOut({
+         //   'requestType': 'class',
+         //   'recipient': 'interface',
+         //   'request': 0x22,
+         //   'value': 0x01,
+        //    'index': 0x02}))
         .then(() => {
           readLoop();
         });
@@ -64,9 +64,11 @@ var serial = {};
             'value': 0x00,
             'index': 0x02})
         .then(() => this.device_.close());
+		console.log('Close Device');
   };
 
   serial.Port.prototype.send = function(data) {
-    return this.device_.transferOut(4, data);
+	  console.log('Send...');
+    return this.device_.transferOut(1, data);
   };
 })();
